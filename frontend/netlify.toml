@@ -1,0 +1,15 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Ensure single-page app routes work
+[[redirects]]
+  from = "/api/*"
+  to = "http://localhost:4000/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
