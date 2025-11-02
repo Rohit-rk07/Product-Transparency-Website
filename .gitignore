@@ -1,0 +1,39 @@
+# Node / frontend
+node_modules/
+**/node_modules/
+dist/
+build/
+*.log
+
+# Vite/React
+frontend/dist/
+frontend/.env
+
+# Backend
+backend/.env
+backend/dist/
+backend/build/
+
+# Python / AI service
+.ai/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.ai-service/.env
+ai-service/.env
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Testing / Coverage
+coverage/
+.pytest_cache/
+
+# Misc
+.env
+.env.*
+*.local
