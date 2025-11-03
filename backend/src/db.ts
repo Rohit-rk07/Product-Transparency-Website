@@ -7,5 +7,6 @@ export const pool = new pg.Pool({
 });
 
 export async function query<T = any>(text: string, params?: any[]): Promise<{ rows: T[] }>{
-  return pool.query(text, params);
+  const res = await pool.query<T>(text, params as any);
+  return { rows: res.rows as T[] };
 }
