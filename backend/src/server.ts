@@ -10,10 +10,27 @@ dotenv.config();
 
 const app = express();
 app.use(bodyParser.json({ limit: '2mb' }));
-app.use(cors({
-  origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:5173', 'http://127.0.0.1:5173'],
+// Normalize allowed origins and enable robust CORS including preflight
+const envOrigins = (process.env.CORS_ORIGIN || '')
+  .split(',')
+  .map(s => s.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
+const defaultOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173'];
+const allowedOrigins = envOrigins.length ? envOrigins : defaultOrigins;
+
+const corsOptions: cors.CorsOptions = {
+  origin(origin, callback) {
+    if (!origin) return callback(null, true); // non-browser or same-origin
+    const cleaned = origin.replace(/\/+$/, '');
+    if (allowedOrigins.includes(cleaned)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
-}));
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization']
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.get('/health', (_req: Request, res: Response) => res.json({ ok: true }));
 app.use('/api/auth', authRouter);
