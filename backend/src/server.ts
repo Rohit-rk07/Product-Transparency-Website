@@ -5,6 +5,10 @@ import productsRouter from './routes/products.js';
 import aiRouter from './routes/ai.js';
 import cors from 'cors';
 import authRouter from './routes/auth.js';
+import { pool } from './db.js';
+import { readFileSync } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
@@ -46,5 +50,27 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ error: 'Internal Server Error' });
 });
 
-const port = Number(process.env.PORT || 4000);
-app.listen(port, () => console.log(`API up on http://localhost:${port}`));
+async function initDatabase() {
+  const check = await pool.query<{ exists: boolean }>(
+    "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'users') AS exists"
+  );
+  if (!check.rows[0]?.exists) {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const migrationPath = path.join(__dirname, '..', '..', 'db', 'migrations', '001_init.sql');
+    const sql = readFileSync(migrationPath, 'utf8');
+    await pool.query(sql);
+  }
+}
+
+async function start() {
+  try {
+    await initDatabase();
+  } catch (e) {
+    console.error('DB init error:', e);
+  }
+  const port = Number(process.env.PORT || 4000);
+  app.listen(port, () => console.log(`API up on http://localhost:${port}`));
+}
+
+start();
