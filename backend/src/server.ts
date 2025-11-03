@@ -22,7 +22,10 @@ const corsOptions: cors.CorsOptions = {
   origin(origin, callback) {
     if (!origin) return callback(null, true); // non-browser or same-origin
     const cleaned = origin.replace(/\/+$/, '');
+    // Allow explicit env origins
     if (allowedOrigins.includes(cleaned)) return callback(null, true);
+    // Allow all vercel.app subdomains (prod and previews)
+    if (/^https?:\/\/([a-z0-9-]+\.)*vercel\.app$/i.test(cleaned)) return callback(null, true);
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
