@@ -23,5 +23,7 @@ RUN apt-get update \
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 COPY --from=build /app/dist ./dist
+# Ensure dist exists even if previous build stage did not produce it
+RUN test -d dist || npm run build
 EXPOSE 4000
 CMD ["npm", "start"]
