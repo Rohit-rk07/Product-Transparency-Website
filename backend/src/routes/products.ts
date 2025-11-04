@@ -65,7 +65,13 @@ router.post('/:id/generate-report', requireAuth, async (req: Request, res: Respo
   const id = req.params.id;
   const product = await query(`SELECT * FROM products WHERE id = $1`, [id]);
   if (!product.rows[0]) return res.status(404).json({ error: 'Not found' });
-  const answers = await query(`SELECT * FROM answers WHERE product_id = $1`, [id]);
+  const answers = await query(
+    `SELECT a.*, q.question_text FROM answers a
+     LEFT JOIN questions q ON q.id = a.question_id
+     WHERE a.product_id = $1
+     ORDER BY a.answered_at ASC`,
+    [id]
+  );
 
   // optional: call AI for score
   let transparency_score: number | null = null;
@@ -90,7 +96,13 @@ router.post('/:id/generate-report', requireAuth, async (req: Request, res: Respo
   <div class="item"><strong>Transparency Score:</strong> ${transparency_score ?? 'N/A'}</div>
   <h2>Answers</h2>
   <ul>
-    ${answers.rows.map((a: any) => `<li>${a.question_id ?? ''}: ${a.answer_text ?? ''}</li>`).join('')}
+    ${answers.rows
+      .map((a: any) => {
+        const label = (a.question_text ?? a.question_id ?? '').toString();
+        const val = (a.answer_text ?? (a.answer_json ? JSON.stringify(a.answer_json) : '') ?? '').toString();
+        return `<li><strong>${label}</strong>: ${val}</li>`;
+      })
+      .join('')}
   </ul>
   </body></html>`;
 
