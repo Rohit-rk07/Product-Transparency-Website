@@ -1,6 +1,5 @@
 FROM node:20-bullseye-slim AS runner
 WORKDIR /app
-ENV NODE_ENV=production
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 # Install Chromium and fonts for Puppeteer
@@ -9,9 +8,14 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
-RUN npm ci
+# Install with devDependencies to build TypeScript
+RUN npm ci --include=dev
 COPY . .
 # Build TypeScript to dist
 RUN npm run build
+# Remove devDependencies for smaller runtime image
+RUN npm prune --omit=dev
+# Set production environment for runtime
+ENV NODE_ENV=production
 EXPOSE 4000
 CMD ["npm", "start"]
