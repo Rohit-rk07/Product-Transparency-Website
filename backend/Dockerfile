@@ -22,5 +22,6 @@ RUN apt-get update \
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+COPY --from=build /app/dist ./dist
 EXPOSE 4000
 CMD ["npm", "start"]
