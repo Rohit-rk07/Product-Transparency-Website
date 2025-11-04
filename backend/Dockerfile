@@ -12,7 +12,7 @@ COPY package*.json ./
 RUN npm ci --include=dev
 COPY . .
 # Build TypeScript to dist
-RUN npm run build
+RUN npx tsc -p .
 # Remove devDependencies for smaller runtime image
 RUN npm prune --omit=dev
 # Set production environment for runtime
