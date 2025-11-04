@@ -11,6 +11,8 @@ COPY package*.json ./
 # Install with devDependencies to build TypeScript
 RUN npm ci --include=dev
 COPY . .
+# Fix permissions on node_modules binaries
+RUN chmod -R +x node_modules/.bin
 # Build TypeScript to dist
 RUN npx tsc -p .
 # Remove devDependencies for smaller runtime image
